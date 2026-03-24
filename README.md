@@ -39,7 +39,10 @@ The repository is structured as an [Apps Script](https://developers.google.com/a
 
 1. The add-on is not able to fetch the word count for the very first revision of a document.
 2. The add-on is only able to fetch the word count by section for the current document. Past revisions are only able to fetch the total word count.
+3. Revision history is not reliable. For example, after 3 months Google Drive can merge previous revisions. Unless they are named.
 
 ## TODO
 
 1. Add fail handler and error page for all methods. https://developers.google.com/apps-script/guides/html/reference/run#withFailureHandler(Function)
+2. Adjust UTC time for local timezone so changes appear on the correct date.
+3. Add word count goal and display progress towards goal. Divide goal by the number of chapters/headings to determine per-chapter progress.
