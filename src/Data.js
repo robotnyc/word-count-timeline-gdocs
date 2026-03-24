@@ -96,21 +96,21 @@ function getHeadingWordCounts() {
  * @return {Array<Object>}
  */
 function fetchRevisions(fileId) {
-  let revisions;
+  let allRevisions = [];
   let pageToken = null;
   do {
     try {
-      revisions = Drive.Revisions.list(fileId, {
+      const response = Drive.Revisions.list(fileId, {
         fields: "revisions(id,modifiedTime,exportLinks),nextPageToken",
         pageToken: pageToken,
       });
-      if (!revisions.revisions || revisions.revisions.length === 0) {
-        console.log("fetchRevisions: no revisions returned.");
-        return [];
+      if (!response.revisions || response.revisions.length === 0) {
+        console.log("fetchRevisions: no revisions returned on this page.");
+        break;
       }
-      for (let i = 0; i < revisions.revisions.length; i++) {
+      for (let i = 0; i < response.revisions.length; i++) {
         // NB: update fields above if more fields are added
-        const revision = revisions.revisions[i];
+        const revision = response.revisions[i];
         const date = new Date(revision.modifiedTime);
         const id = revision.id;
         console.log(
@@ -119,14 +119,16 @@ function fetchRevisions(fileId) {
           date.toLocaleString()
         );
       }
-      pageToken = revisions.nextPageToken;
+      allRevisions = allRevisions.concat(response.revisions);
+      pageToken = response.nextPageToken;
     } catch (err) {
       console.log("fetchRevisions: Failed with error %s", err.message);
+      break;
     }
   } while (pageToken);
 
-  console.log("fetchRevisions: found %d revisions.", revisions.revisions.length);
-  return revisions.revisions;
+  console.log("fetchRevisions: found %d revisions.", allRevisions.length);
+  return allRevisions;
 }
 
 function fetchRevisionWordCount() {
