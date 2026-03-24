@@ -137,17 +137,48 @@ function fetchRevisionWordCount() {
   const documentProperties = PropertiesService.getDocumentProperties();
   const cachedProperties = documentProperties.getProperties();
 
-  let revisionWordCounts = [];
-  let propertiesToUpdate = {};
+  const CACHE_KEY = 'ALL_REVISIONS_CACHE';
+  let cachedDataStr = documentProperties.getProperty(CACHE_KEY);
+  let allRevisionsCache = {};
+  if (cachedDataStr) {
+    try {
+      allRevisionsCache = JSON.parse(cachedDataStr);
+    } catch (e) {
+      console.log("Failed to parse ALL_REVISIONS_CACHE: " + e.message);
+    }
+  }
+
+  let cacheUpdated = false;
 
   for (let i = 0; i < revisions.length; i++) {
     const rev = revisions[i];
-    const cacheKey = 'REV_WC_' + rev.id;
-    let wc;
 
-    if (cachedProperties[cacheKey] !== undefined) {
-      wc = parseInt(cachedProperties[cacheKey], 10);
-      console.log("Revision %s found in cache with word count %d", rev.id, wc);
+    if (allRevisionsCache[rev.id] !== undefined) {
+      console.log("Revision %s found in cache with word count %d", rev.id, allRevisionsCache[rev.id].wordCount);
+      continue;
+    }
+
+    // check if we already have a revision for this day
+    // TODO update to use the latest revision of the day
+    const revDateString = new Date(rev.modifiedTime).toDateString();
+    let dateAlreadyCached = false;
+    const cachedCacheValues = Object.keys(allRevisionsCache).map(k => allRevisionsCache[k]);
+    for (let j = 0; j < cachedCacheValues.length; j++) {
+      if (new Date(cachedCacheValues[j].date).toDateString() === revDateString) {
+        dateAlreadyCached = true;
+        break;
+      }
+    }
+    if (dateAlreadyCached) {
+      console.log("Skipping revision %s because date %s is already cached.", rev.id, revDateString);
+      continue;
+    }
+
+    let wc;
+    const oldCacheKey = 'REV_WC_' + rev.id;
+    if (cachedProperties[oldCacheKey] !== undefined) {
+      wc = parseInt(cachedProperties[oldCacheKey], 10);
+      console.log("Revision %s found in legacy cache with word count %d", rev.id, wc);
     } else {
       try {
         wc = getWordCountForRevision(docId, rev.id);
@@ -160,21 +191,27 @@ function fetchRevisionWordCount() {
         console.log('No text available for revision %s', rev.id);
         continue;
       }
-
       console.log("Revision %s has word count %d", rev.id, wc);
-      propertiesToUpdate[cacheKey] = wc.toString();
     }
 
-    revisionWordCounts.push({
-      date: rev.modifiedTime,
+    allRevisionsCache[rev.id] = {
       id: rev.id,
+      date: rev.modifiedTime,
       wordCount: wc
-    });
+    };
+    cacheUpdated = true;
   }
 
-  if (Object.keys(propertiesToUpdate).length > 0) {
-    documentProperties.setProperties(propertiesToUpdate);
+  if (cacheUpdated) {
+    try {
+      documentProperties.setProperty(CACHE_KEY, JSON.stringify(allRevisionsCache));
+    } catch (e) {
+      console.log("Failed to save ALL_REVISIONS_CACHE: " + e.message);
+    }
   }
+
+  let revisionWordCounts = Object.values(allRevisionsCache);
+  revisionWordCounts.sort((a, b) => new Date(a.date) - new Date(b.date));
 
   return revisionWordCounts;
 }
