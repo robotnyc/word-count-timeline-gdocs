@@ -92,28 +92,56 @@
       font-size: 13px;
       padding-left: 12px;
     }
+
+    .progress-bar-container {
+      width: 100%;
+      background-color: #e8eaed;
+      border-radius: 4px;
+      height: 6px;
+      margin-top: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background-color: #1a73e8;
+      border-radius: 4px;
+    }
   </style>
   <script>
+    var appData = {};
+
     function onLoad() {
-      var data = {};
       var loaded = 0;
 
       function checkRender() {
         loaded++;
-        if (loaded === 2) {
-          render(data);
+        if (loaded === 3) {
+          render(appData);
         }
       }
 
       google.script.run.withSuccessHandler(function (count) {
-        data.wordCount = count;
+        appData.wordCount = count;
         checkRender();
       }).getCurrentWordCount();
 
       google.script.run.withSuccessHandler(function (headings) {
-        data.headingWordCounts = headings;
+        appData.headingWordCounts = headings;
         checkRender();
       }).getHeadingWordCounts();
+
+      google.script.run.withSuccessHandler(function (goal) {
+        appData.goal = goal;
+        checkRender();
+      }).getWordCountGoal();
+    }
+
+    function saveGoal(value) {
+      var goal = value ? parseInt(value, 10) : null;
+      appData.goal = goal;
+      google.script.run.setWordCountGoal(goal);
+      render(appData);
     }
 
     function escapeHtml(text) {
@@ -128,21 +156,30 @@
       return text.replace(/[&<>"']/g, function (m) { return map[m]; });
     }
 
-    function buildOutlineHtml(node, isRoot) {
+    function buildOutlineHtml(node, isRoot, currentGoal) {
       if (!node) return '';
 
       var html = '';
       if (!isRoot) {
-        html += '<div class="outline-item">';
+        html += '<div class="outline-item" style="flex-wrap: wrap;">';
+        html += '<div style="display: flex; width: 100%; align-items: center;">';
         html += '<span class="outline-title" title="' + escapeHtml(node.title) + '">' + escapeHtml(node.title) + '</span>';
         html += '<span class="outline-count">' + node.wordCount + ' words</span>';
+        html += '</div>';
+
+        if (currentGoal) {
+          var pct = Math.min(100, Math.round((node.wordCount / currentGoal) * 100));
+          html += '<div class="progress-bar-container" title="Goal: ' + Math.round(currentGoal) + '"><div class="progress-bar" style="width: ' + pct + '%"></div></div>';
+        }
+
         html += '</div>';
       }
 
       if (node.subheadings && node.subheadings.length > 0) {
+        var childGoal = currentGoal ? (currentGoal / node.subheadings.length) : null;
         html += '<ul class="outline-list' + (isRoot ? ' root-list' : '') + '">';
         for (var i = 0; i < node.subheadings.length; i++) {
-          html += '<li>' + buildOutlineHtml(node.subheadings[i], false) + '</li>';
+          html += '<li>' + buildOutlineHtml(node.subheadings[i], false, childGoal) + '</li>';
         }
         html += '</ul>';
       }
@@ -150,9 +187,19 @@
     }
 
     function render(data) {
-      var outlineHtml = '<div class="document-total">Total: ' + data.wordCount + ' words</div>';
+      var goalHtml = '<div class="document-total" style="display: flex; align-items: center; justify-content: space-between;">' + 
+                     '<span>Goal: <input type="number" id="goal-input" value="' + (data.goal || '') + '" onchange="saveGoal(this.value)" style="width: 80px;" title="Set total word count goal" /></span>' +
+                     '</div>';
+
+      var outlineHtml = goalHtml + '<div class="document-total">Total: ' + data.wordCount + ' words</div>';
+
+      if (data.goal) {
+         var pct = Math.min(100, Math.round((data.wordCount / data.goal) * 100));
+         outlineHtml += '<div class="progress-bar-container" style="margin: 0 12px 12px 12px; width: auto;" title="Goal: ' + Math.round(data.goal) + '"><div class="progress-bar" style="width: '+pct+'%"></div></div>';
+      }
+
       if (data.headingWordCounts) {
-        outlineHtml += buildOutlineHtml(data.headingWordCounts, true);
+        outlineHtml += buildOutlineHtml(data.headingWordCounts, true, data.goal);
       }
       var outlineContainer = document.getElementById('outline-container');
       if (outlineContainer) {

@@ -23,6 +23,29 @@ function getCurrentWordCount() {
 }
 
 /**
+ * Retrieves the user-set word count goal.
+ * @returns {number|null} The word count goal, or null if not set.
+ */
+function getWordCountGoal() {
+  const documentProperties = PropertiesService.getDocumentProperties();
+  const goal = documentProperties.getProperty('WORD_COUNT_GOAL');
+  return goal ? parseInt(goal, 10) : null;
+}
+
+/**
+ * Saves the user-set word count goal.
+ * @param {number|string} goal - The word count goal.
+ */
+function setWordCountGoal(goal) {
+  const documentProperties = PropertiesService.getDocumentProperties();
+  if (goal) {
+    documentProperties.setProperty('WORD_COUNT_GOAL', goal.toString());
+  } else {
+    documentProperties.deleteProperty('WORD_COUNT_GOAL');
+  }
+}
+
+/**
  * Get the word counts heading.
  */
 function getHeadingWordCounts() {
