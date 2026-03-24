@@ -9,6 +9,7 @@ This add-on only tries to use only read-only access so your documents stay safe 
 1. Track word count by document and by chapter against an optional goal count (stored in an Apps Script property).
 2. Session word count changes over time (group revisions by 60 minute sessions). This uses the Google Drive revisions API.
 3. Track edits vs new words added by diff'ing document revisions.
+4. Only the first Document Tab is counted. Move notes, edits, drafts, etc... into another tab so they are not counted.
 
 ### Visualizations
 
