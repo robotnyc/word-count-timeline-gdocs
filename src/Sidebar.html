@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    #result {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .branding-below {
+      bottom: 56px;
+      top: 0;
+    }
+
+    .branding-text {
+      left: 7px;
+      position: relative;
+      top: 3px;
+    }
+
+    .col-contain {
+      overflow: hidden;
+    }
+
+    .col-one {
+      float: left;
+      width: 50%;
+    }
+
+    .logo {
+      vertical-align: middle;
+    }
+
+    .radio-spacer {
+      height: 20px;
+    }
+
+    .width-100 {
+      width: 100%;
+    }
+
+    .outline-list {
+      list-style-type: none;
+      padding-left: 16px;
+      margin: 0;
+      font-family: "Google Sans", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .root-list {
+      padding-left: 0;
+    }
+
+    .outline-item {
+      padding: 6px 12px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      color: #3c4043;
+      border-radius: 0 16px 16px 0;
+      cursor: pointer;
+      margin: 2px 0;
+      border-left: 3px solid transparent;
+    }
+
+    .outline-item:hover {
+      background-color: #f1f3f4;
+    }
+
+    .outline-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-grow: 1;
+    }
+
+    .outline-count {
+      color: #5f6368;
+      font-size: 12px;
+      margin-left: 12px;
+      white-space: nowrap;
+    }
+
+    .document-total {
+      font-family: "Google Sans", Roboto, Helvetica, Arial, sans-serif;
+      font-weight: 500;
+      color: #3c4043;
+      margin-bottom: 12px;
+      font-size: 13px;
+      padding-left: 12px;
+    }
+  </style>
+  <script>
+    function onLoad() {
+      var data = {};
+      var loaded = 0;
+
+      function checkRender() {
+        loaded++;
+        if (loaded === 2) {
+          render(data);
+        }
+      }
+
+      google.script.run.withSuccessHandler(function (count) {
+        data.wordCount = count;
+        checkRender();
+      }).getCurrentWordCount();
+
+      google.script.run.withSuccessHandler(function (headings) {
+        data.headingWordCounts = headings;
+        checkRender();
+      }).getHeadingWordCounts();
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      var map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, function (m) { return map[m]; });
+    }
+
+    function buildOutlineHtml(node, isRoot) {
+      if (!node) return '';
+
+      var html = '';
+      if (!isRoot) {
+        html += '<div class="outline-item">';
+        html += '<span class="outline-title" title="' + escapeHtml(node.title) + '">' + escapeHtml(node.title) + '</span>';
+        html += '<span class="outline-count">' + node.wordCount + ' words</span>';
+        html += '</div>';
+      }
+
+      if (node.subheadings && node.subheadings.length > 0) {
+        html += '<ul class="outline-list' + (isRoot ? ' root-list' : '') + '">';
+        for (var i = 0; i < node.subheadings.length; i++) {
+          html += '<li>' + buildOutlineHtml(node.subheadings[i], false) + '</li>';
+        }
+        html += '</ul>';
+      }
+      return html;
+    }
+
+    function render(data) {
+      var outlineHtml = '<div class="document-total">Total: ' + data.wordCount + ' words</div>';
+      if (data.headingWordCounts) {
+        outlineHtml += buildOutlineHtml(data.headingWordCounts, true);
+      }
+      var outlineContainer = document.getElementById('outline-container');
+      if (outlineContainer) {
+        outlineContainer.innerHTML = outlineHtml;
+      }
+    }
+
+    function fetchWordCount() {
+      document.getElementById('result').innerText = 'Loading...';
+      google.script.run
+        .withSuccessHandler(function (count) {
+          document.getElementById('result').innerText = 'Word count: ' + count;
+        })
+        .getCurrentWordCount();
+    }
+
+    let timelineChart = null;
+
+    function fetchRevisionWordCount() {
+      document.getElementById('result').innerText = 'Loading...';
+      google.script.run
+        .withSuccessHandler(function (data) {
+          document.getElementById('result').innerHTML = '<canvas id="timelineChart"></canvas>';
+          var ctx = document.getElementById('timelineChart').getContext('2d');
+
+          var labels = data.map(function (item) {
+            var d = new Date(item.date);
+            return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+          });
+          var counts = data.map(function (item) {
+            return item.wordCount;
+          });
+
+          if (timelineChart) {
+            timelineChart.destroy();
+          }
+
+          timelineChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Word Count',
+                data: counts,
+                borderColor: '#1a73e8',
+                backgroundColor: 'rgba(26, 115, 232, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.1,
+                pointRadius: 2
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  display: false
+                }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: 'Words'
+                  }
+                },
+                x: {
+                  ticks: {
+                    maxTicksLimit: 5
+                  }
+                }
+              }
+            }
+          });
+        })
+        .fetchRevisionWordCount();
+    }
+
+    function fetchHeadingWordCounts() {
+      document.getElementById('result').innerText = 'Loading...';
+      google.script.run
+        .withSuccessHandler(function (data) {
+          document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        })
+        .getHeadingWordCounts();
+    }
+
+  </script>
+</head>
+
+<body onload="onLoad()">
+  <div class="sidebar branding-below">
+    <h1>Document</h1>
+    <div id="outline-container">Loading...</div>
+
+    <h1>Timeline</h1>
+    <div class="block" id="result"></div>
+    <div class="block">
+      <button class="action" onclick="fetchRevisionWordCount()">Get Revision Word Counts</button>
+    </div>
+  </div>
+</body>
+
+</html>

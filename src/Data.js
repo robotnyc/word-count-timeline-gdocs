@@ -1,0 +1,294 @@
+/**
+ * Google Docs/Drive API wrappers.
+ */
+
+/**
+ * Get the word count for a document by its ID.
+ * @param {string} docId - The ID of the document to get the word count for.
+ * @returns {number} The word count.
+ */
+function getCurrentWordCountById(docId) {
+  const doc = DocumentApp.openById(docId);
+  const text = doc.getBody().getText();
+  return text.trim().split(/\s+/).length;
+}
+
+/**
+ * Get the current word count of the active document.
+ * @returns {number} The word count.
+ */
+function getCurrentWordCount() {
+  const docId = DocumentApp.getActiveDocument().getId();
+  return getCurrentWordCountById(docId);
+}
+
+/**
+ * Get the word counts heading.
+ */
+function getHeadingWordCounts() {
+  const doc = DocumentApp.getActiveDocument();
+  const body = doc.getBody();
+  const paragraphs = body.getParagraphs();
+
+  const root = { title: "Document", wordCount: 0, subheadings: [], level: 0 };
+  const stack = [root];
+
+  for (let i = 0; i < paragraphs.length; i++) {
+    const p = paragraphs[i];
+    const text = p.getText().trim();
+    if (!text) continue;
+
+    const count = text.split(/\s+/).length;
+    const headingEnum = p.getHeading();
+
+    if (headingEnum === DocumentApp.ParagraphHeading.SUBTITLE) {
+      continue;
+    }
+
+    let level = null;
+    switch (headingEnum) {
+      case DocumentApp.ParagraphHeading.TITLE: level = 1; break;
+      case DocumentApp.ParagraphHeading.HEADING1: level = 2; break;
+      case DocumentApp.ParagraphHeading.HEADING2: level = 3; break;
+      case DocumentApp.ParagraphHeading.HEADING3: level = 4; break;
+      case DocumentApp.ParagraphHeading.HEADING4: level = 5; break;
+      case DocumentApp.ParagraphHeading.HEADING5: level = 6; break;
+      case DocumentApp.ParagraphHeading.HEADING6: level = 7; break;
+    }
+
+    if (level !== null) {
+      // Create node without counting the heading's own words
+      const node = { title: text, wordCount: 0, subheadings: [], level: level };
+
+      while (stack.length > 0 && stack[stack.length - 1].level >= level) {
+        stack.pop();
+      }
+
+      if (stack.length > 0) {
+        stack[stack.length - 1].subheadings.push(node);
+      }
+
+      stack.push(node);
+    } else {
+      // Normal paragraph (only add to ancestors, don't count heading text)
+      for (let j = 0; j < stack.length; j++) {
+        stack[j].wordCount += count;
+      }
+    }
+  }
+
+  function cleanUp(node) {
+    delete node.level;
+    if (node.subheadings && node.subheadings.length === 0) {
+      delete node.subheadings;
+    } else if (node.subheadings) {
+      node.subheadings.forEach(cleanUp);
+    }
+  }
+  cleanUp(root);
+
+  return root;
+}
+
+/**
+ * Retrieves revision metadata for a document via Drive.
+ * @param {string} fileId - The ID of the file to retrieve revisions for.
+ * @return {Array<Object>}
+ */
+function fetchRevisions(fileId) {
+  let revisions;
+  let pageToken = null;
+  do {
+    try {
+      revisions = Drive.Revisions.list(fileId, {
+        fields: "revisions(id,modifiedTime,exportLinks),nextPageToken",
+        pageToken: pageToken,
+      });
+      if (!revisions.revisions || revisions.revisions.length === 0) {
+        console.log("fetchRevisions: no revisions returned.");
+        return [];
+      }
+      for (let i = 0; i < revisions.revisions.length; i++) {
+        // NB: update fields above if more fields are added
+        const revision = revisions.revisions[i];
+        const date = new Date(revision.modifiedTime);
+        const id = revision.id;
+        console.log(
+          "Revision %s Date: %s",
+          id,
+          date.toLocaleString()
+        );
+      }
+      pageToken = revisions.nextPageToken;
+    } catch (err) {
+      console.log("fetchRevisions: Failed with error %s", err.message);
+    }
+  } while (pageToken);
+
+  console.log("fetchRevisions: found %d revisions.", revisions.revisions.length);
+  return revisions.revisions;
+}
+
+function fetchRevisionWordCount() {
+  const docId = DocumentApp.getActiveDocument().getId();
+  const revisions = fetchRevisions(docId);
+  const documentProperties = PropertiesService.getDocumentProperties();
+  const cachedProperties = documentProperties.getProperties();
+
+  let revisionWordCounts = [];
+  let propertiesToUpdate = {};
+
+  for (let i = 0; i < revisions.length; i++) {
+    const rev = revisions[i];
+    const cacheKey = 'REV_WC_' + rev.id;
+    let wc;
+
+    if (cachedProperties[cacheKey] !== undefined) {
+      wc = parseInt(cachedProperties[cacheKey], 10);
+      console.log("Revision %s found in cache with word count %d", rev.id, wc);
+    } else {
+      try {
+        wc = getWordCountForRevision(docId, rev.id);
+      } catch (e) {
+        console.log('Failed to get word count for revision %s: %s', rev.id, e.message);
+        continue;
+      }
+
+      if (wc === null) {
+        console.log('No text available for revision %s', rev.id);
+        continue;
+      }
+
+      console.log("Revision %s has word count %d", rev.id, wc);
+      propertiesToUpdate[cacheKey] = wc.toString();
+    }
+
+    revisionWordCounts.push({
+      date: rev.modifiedTime,
+      id: rev.id,
+      wordCount: wc
+    });
+  }
+
+  if (Object.keys(propertiesToUpdate).length > 0) {
+    documentProperties.setProperties(propertiesToUpdate);
+  }
+
+  return revisionWordCounts;
+}
+
+/**
+ * Compute session groups out of a revision list.
+ * @param {Array<Object>} revisions
+ * @return {Array<Object>}
+ */
+function groupRevisionsByHour(revisions) {
+  // TODO: implement grouping by 60-minute windows
+  return [];
+}
+
+
+/**
+ * Retrieve the plain‑text body of a specific revision.  Google Drive
+ * revisions for Google Docs don't include the document text directly;
+ * instead the revision resource contains `exportLinks` which point at
+ * endpoints that will render that revision in a given MIME type.  We
+ * fetch the `text/plain` export and return it so callers can compute a
+ * word count or diff the string.
+ *
+ * @param {string} fileId  Drive file ID for the doc
+ * @param {string} revisionId  ID of the revision (from `fetchRevisions`)
+ * @returns {string} plain‑text snapshot of the document at that revision
+ */
+function fetchRevisionText(fileId, revisionId) {
+  const rev = Drive.Revisions.get(fileId, revisionId, {
+    fields: 'exportLinks',
+  });
+
+  // not every revision has an export link; the very first revision is
+  // sometimes just the "conversion" or creation marker and can't be
+  // exported.  Return null instead of throwing so callers can decide what
+  // to do (e.g. skip the revision).
+  if (!rev.exportLinks || !rev.exportLinks['text/plain']) {
+    console.log(
+      'fetchRevisionText: no text/plain link for revision %s, maybe binary placeholder',
+      revisionId
+    );
+    return null;
+  }
+
+  // text/plain MIME type is used because it does not contain images. However this breaks the ability to calculate word count by heading.
+  const url = rev.exportLinks['text/plain'];
+  const token = ScriptApp.getOAuthToken();
+
+  const resp = UrlFetchApp.fetch(url, {
+    headers: {
+      Authorization: 'Bearer ' + token,
+    },
+    muteHttpExceptions: true,
+  });
+
+  if (resp.getResponseCode() !== 200) {
+    const html = resp.getContentText();
+    const match = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+    if (match && match[1]) {
+      const plainText = match[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      console.log("fetchRevisionText: Failed to fetch URL %s revision %s content: %s", url, revisionId, plainText);
+    }
+    throw new Error('HTTP response code: ' + resp.getResponseCode());
+  }
+
+  return resp.getContentText();
+}
+
+
+/**
+ * Convenience wrapper that returns the word count for a given revision
+ * snapshot.
+ * @param {string} fileId
+ * @param {string} revisionId
+ * @returns {number}
+ */
+function getWordCountForRevision(fileId, revisionId) {
+  const txt = fetchRevisionText(fileId, revisionId);
+  return txt.trim().split(/\s+/).filter(Boolean).length;
+}
+/**
+ * TEMPORARY UTILITY FOR TESTING:
+ * Exports the revision metadata and text for the active document as a JSON string.
+ * Run this function from the Apps Script editor and copy the output from the execution log
+ * to a local file (e.g., mock-data.json) to use in local unit tests.
+ */
+function exportRevisionsSnapshot() {
+  // REPLACE 'YOUR_DOCUMENT_ID_HERE' with the ID of the document you want to snapshot
+  const docId = '1zYtFTu3Qc9NahnPMaZNb8gNDVzgVKNN5ynFWVYN-sJw';
+  console.log(`Exporting snapshot for Document ID: ${docId}`);
+
+  const revisions = fetchRevisions(docId);
+  const snapshotData = [];
+
+  for (let i = 0; i < revisions.length; i++) {
+    const rev = revisions[i];
+    let text = null;
+    try {
+      // We fetch the raw text directly instead of the word count
+      // because we want to mock the API response, not the processed data.
+      text = fetchRevisionText(docId, rev.id);
+    } catch (e) {
+      console.log(`Skipping text for revision ${rev.id}: ${e.message}`);
+    }
+
+    snapshotData.push({
+      revisionMetadata: rev,
+      textContent: text
+    });
+
+    // avoid 'This file might be unavailable right now due to heavy traffic. Try again.'
+    Utilities.sleep(500);
+  }
+
+  // Use JSON.stringify to output a format easy to copy/paste
+  console.log("=== BEGIN SNAPSHOT DATA ===");
+  console.log(JSON.stringify(snapshotData, null, 2));
+  console.log("=== END SNAPSHOT DATA ===");
+}
