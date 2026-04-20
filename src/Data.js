@@ -3,23 +3,13 @@
  */
 
 /**
- * Get the word count for a document by its ID.
- * @param {string} docId - The ID of the document to get the word count for.
- * @returns {number} The word count.
- */
-function getCurrentWordCountById(docId) {
-  const doc = DocumentApp.openById(docId);
-  const text = doc.getBody().getText();
-  return text.trim().split(/\s+/).length;
-}
-
-/**
  * Get the current word count of the active document.
  * @returns {number} The word count.
  */
 function getCurrentWordCount() {
-  const docId = DocumentApp.getActiveDocument().getId();
-  return getCurrentWordCountById(docId);
+  const doc = DocumentApp.getActiveDocument();
+  const text = doc.getBody().getText();
+  return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
 /**
