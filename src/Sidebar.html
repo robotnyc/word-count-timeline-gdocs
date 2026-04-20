@@ -140,7 +140,7 @@
 
     function onLoad() {
       refreshOutline();
-      pollRevisionWordCount(3, -1);
+      pollRevisionWordCounts(3, -1);
     }
 
     function saveGoal(value) {
@@ -280,7 +280,7 @@
       });
     }
 
-    function pollRevisionWordCount(attemptsLeft, previousCount) {
+    function pollRevisionWordCounts(attemptsLeft, previousCount) {
       if (!document.getElementById('result').innerHTML.includes('canvas')) {
         document.getElementById('result').innerText = 'Loading...';
       }
@@ -290,15 +290,15 @@
 
           if (data.length !== previousCount && attemptsLeft > 1) {
             setTimeout(function () {
-              pollRevisionWordCount(attemptsLeft - 1, data.length);
+              pollRevisionWordCounts(attemptsLeft - 1, data.length);
             }, 30000);
           }
         })
-        .fetchRevisionWordCount();
+        .fetchRevisionWordCounts();
     }
 
-    function fetchRevisionWordCount() {
-      pollRevisionWordCount(1, -1);
+    function fetchRevisionWordCounts() {
+      pollRevisionWordCounts(1, -1);
     }
 
     function fetchHeadingWordCounts() {
@@ -324,7 +324,7 @@
     <div class="block">
       <div style="display: flex; align-items: center; justify-content: space-between;">
         <h1>Timeline</h1>
-        <button class="action" onclick="fetchRevisionWordCount()" title="Refresh timeline" style="margin-right: 12px;">Refresh</button>
+        <button class="action" onclick="fetchRevisionWordCounts()" title="Refresh timeline" style="margin-right: 12px;">Refresh</button>
       </div>
       <div class="block" id="result"></div>
     </div>

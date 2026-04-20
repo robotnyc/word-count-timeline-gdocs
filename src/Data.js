@@ -154,7 +154,7 @@ function fetchRevisions(fileId) {
   return allRevisions;
 }
 
-function fetchRevisionWordCount() {
+function fetchRevisionWordCounts() {
   const docId = DocumentApp.getActiveDocument().getId();
   const revisions = fetchRevisions(docId);
   const documentProperties = PropertiesService.getDocumentProperties();
@@ -204,7 +204,7 @@ function fetchRevisionWordCount() {
       console.log("Revision %s found in legacy cache with word count %d", rev.id, wc);
     } else {
       try {
-        wc = getWordCountForRevision(docId, rev.id);
+        wc = fetchWordCountForRevision(docId, rev.id);
       } catch (e) {
         console.log('Failed to get word count for revision %s: %s', rev.id, e.message);
         continue;
@@ -305,13 +305,13 @@ function fetchRevisionText(fileId, revisionId) {
 
 
 /**
- * Convenience wrapper that returns the word count for a given revision
- * snapshot.
+ * Get word count for file revision by ID.
+ *
  * @param {string} fileId
  * @param {string} revisionId
- * @returns {number}
+ * @returns {number} word count, or null if text is not available
  */
-function getWordCountForRevision(fileId, revisionId) {
+function fetchWordCountForRevision(fileId, revisionId) {
   const txt = fetchRevisionText(fileId, revisionId);
-  return txt.trim().split(/\s+/).filter(Boolean).length;
+  return txt ? txt.trim().split(/\s+/).filter(Boolean).length : null;
 }
