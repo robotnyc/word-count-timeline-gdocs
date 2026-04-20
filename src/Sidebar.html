@@ -292,6 +292,8 @@
             setTimeout(function () {
               pollRevisionWordCounts(attemptsLeft - 1, data.length);
             }, 30000);
+          } else {
+            refreshTrends();
           }
         })
         .fetchRevisionWordCounts();
@@ -299,6 +301,57 @@
 
     function fetchRevisionWordCounts() {
       pollRevisionWordCounts(1, -1);
+    }
+
+    function refreshTrends() {
+      var trendsDiv = document.getElementById('result-trends');
+      trendsDiv.innerText = 'Loading...';
+      google.script.run
+        .withSuccessHandler(function (data) {
+          if (!data || data.length < 2) {
+            trendsDiv.innerText = 'Not enough data to calculate trends.';
+            return;
+          }
+
+          var first = data[0];
+          var last = data[data.length - 1];
+          var netWords = last.wordCount - first.wordCount;
+
+          var msPerDay = 1000 * 60 * 60 * 24;
+          var days = (new Date(last.date) - new Date(first.date)) / msPerDay;
+
+          if (days < 1) {
+            days = 1;
+          }
+
+          var perDay = Math.round(netWords / days);
+          var perWeek = Math.round(perDay * 7);
+          var perMonth = Math.round(perDay * 30.44);
+
+          var html = '<ul class="outline-list root-list">';
+          html += '<li class="outline-item"><span class="outline-title">Average per Day</span><span class="outline-count">' + perDay + ' words</span></li>';
+          html += '<li class="outline-item"><span class="outline-title">Average per Week</span><span class="outline-count">' + perWeek + ' words</span></li>';
+          html += '<li class="outline-item"><span class="outline-title">Average per Month</span><span class="outline-count">' + perMonth + ' words</span></li>';
+
+          if (appData.goal && appData.wordCount !== undefined) {
+            var remaining = appData.goal - appData.wordCount;
+            if (remaining > 0) {
+              if (perDay > 0) {
+                var daysLeft = Math.ceil(remaining / perDay);
+                html += '<li class="outline-item"><span class="outline-title">Goal ETA</span><span class="outline-count">' + daysLeft + ' days</span></li>';
+              } else {
+                html += '<li class="outline-item"><span class="outline-title">Goal ETA</span><span class="outline-count">N/A</span></li>';
+              }
+            } else {
+              html += '<li class="outline-item"><span class="outline-title">Goal ETA</span><span class="outline-count">Reached!</span></li>';
+            }
+          }
+
+          html += '</ul>';
+
+          trendsDiv.innerHTML = html;
+        })
+        .fetchRevisionWordCounts(true);
     }
 
     function fetchHeadingWordCounts() {
@@ -316,7 +369,7 @@
 <body onload="onLoad()">
   <div class="sidebar branding-below">
     <div style="display: flex; align-items: center; justify-content: space-between;">
-      <h1>Document</h1>
+      <h1>Outline</h1>
       <button class="action" onclick="refreshOutline()" title="Refresh word counts" style="margin-right: 12px;">Refresh</button>
     </div>
     <div id="outline-container">Loading...</div>
@@ -328,6 +381,12 @@
       </div>
       <div class="block" id="result"></div>
     </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <h1>Trend</h1>
+      <button class="action" onclick="refreshTrends()" title="Refresh trends" style="margin-right: 12px;">Refresh</button>
+    </div>
+    <div class="block" id="result-trends"></div>
   </div>
 </body>
 
