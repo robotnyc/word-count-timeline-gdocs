@@ -172,12 +172,16 @@
     function buildOutlineHtml(node, isRoot, currentGoal) {
       if (!node) return '';
 
+      if (currentGoal) {
+        currentGoal = Math.round(currentGoal);
+      }
+
       var html = '';
       if (!isRoot) {
         html += '<div class="outline-item" style="flex-wrap: wrap;">';
         html += '<div style="display: flex; width: 100%; align-items: center;">';
         html += '<span class="outline-title" title="' + escapeHtml(node.title) + '">' + escapeHtml(node.title) + '</span>';
-        html += '<span class="outline-count">' + node.wordCount + '/' + currentGoal + ' words</span>';
+        html += '<span class="outline-count">' + node.wordCount + '/' + currentGoal + '</span>';
         html += '</div>';
 
         if (currentGoal) {
@@ -190,14 +194,14 @@
           if (overflowPct > 0) {
             barHtml += '<div class="progress-bar-overflow" style="width: ' + overflowPct + '%"></div>';
           }
-          html += '<div class="progress-bar-container" title="Goal: ' + Math.round(currentGoal) + '">' + barHtml + '</div>';
+          html += '<div class="progress-bar-container" title="Goal: ' + currentGoal + '">' + barHtml + '</div>';
         }
 
         html += '</div>';
       }
 
       if (node.subheadings && node.subheadings.length > 0) {
-        var childGoal = currentGoal ? (currentGoal / node.subheadings.length) : null;
+        var childGoal = currentGoal ? Math.round(currentGoal / node.subheadings.length) : null;
         html += '<ul class="outline-list' + (isRoot ? ' root-list' : '') + '">';
         for (var i = 0; i < node.subheadings.length; i++) {
           html += '<li>' + buildOutlineHtml(node.subheadings[i], false, childGoal) + '</li>';
