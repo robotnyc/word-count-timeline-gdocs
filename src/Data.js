@@ -154,11 +154,8 @@ function fetchRevisions(fileId) {
   return allRevisions;
 }
 
-function fetchRevisionWordCounts() {
-  const docId = DocumentApp.getActiveDocument().getId();
-  const revisions = fetchRevisions(docId);
+function fetchRevisionWordCounts(onlyCached = false) {
   const documentProperties = PropertiesService.getDocumentProperties();
-  const cachedProperties = documentProperties.getProperties();
 
   const CACHE_KEY = 'ALL_REVISIONS_CACHE';
   let cachedDataStr = documentProperties.getProperty(CACHE_KEY);
@@ -170,6 +167,16 @@ function fetchRevisionWordCounts() {
       console.log("Failed to parse ALL_REVISIONS_CACHE: " + e.message);
     }
   }
+
+  if (onlyCached) {
+    let revisionWordCounts = Object.values(allRevisionsCache);
+    revisionWordCounts.sort((a, b) => new Date(a.date) - new Date(b.date));
+    return revisionWordCounts;
+  }
+
+  const docId = DocumentApp.getActiveDocument().getId();
+  const revisions = fetchRevisions(docId);
+  const cachedProperties = documentProperties.getProperties();
 
   let cacheUpdated = false;
 
