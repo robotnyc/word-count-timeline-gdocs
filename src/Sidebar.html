@@ -321,10 +321,12 @@
     </div>
     <div id="outline-container">Loading...</div>
 
-    <h1>Timeline</h1>
-    <div class="block" id="result"></div>
     <div class="block">
-      <button class="action" onclick="fetchRevisionWordCount()">Get Revision Word Counts</button>
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <h1>Timeline</h1>
+        <button class="action" onclick="fetchRevisionWordCount()" title="Refresh timeline" style="margin-right: 12px;">Refresh</button>
+      </div>
+      <div class="block" id="result"></div>
     </div>
   </div>
 </body>
