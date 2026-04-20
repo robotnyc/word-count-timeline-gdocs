@@ -183,7 +183,11 @@
         html += '<div class="outline-item" style="flex-wrap: wrap;">';
         html += '<div style="display: flex; width: 100%; align-items: center;">';
         html += '<span class="outline-title" title="' + escapeHtml(node.title) + '">' + escapeHtml(node.title) + '</span>';
-        html += '<span class="outline-count">' + node.wordCount + '/' + currentGoal + '</span>';
+        if (currentGoal) {
+          html += '<span class="outline-count">' + node.wordCount + '/' + currentGoal + '</span>';
+        } else {
+          html += '<span class="outline-count">' + node.wordCount + '</span>';
+        }
         html += '</div>';
 
         if (currentGoal) {
