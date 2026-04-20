@@ -287,13 +287,12 @@
       google.script.run
         .withSuccessHandler(function (data) {
           renderTimelineChart(data);
+          refreshTrends();
 
           if (data.length !== previousCount && attemptsLeft > 1) {
             setTimeout(function () {
               pollRevisionWordCounts(attemptsLeft - 1, data.length);
             }, 30000);
-          } else {
-            refreshTrends();
           }
         })
         .fetchRevisionWordCounts();
