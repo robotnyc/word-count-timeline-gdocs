@@ -140,6 +140,7 @@
 
     function onLoad() {
       refreshOutline();
+      pollRevisionWordCount(3, -1);
     }
 
     function saveGoal(value) {
@@ -223,65 +224,81 @@
 
     let timelineChart = null;
 
-    function fetchRevisionWordCount() {
-      document.getElementById('result').innerText = 'Loading...';
-      google.script.run
-        .withSuccessHandler(function (data) {
-          document.getElementById('result').innerHTML = '<canvas id="timelineChart"></canvas>';
-          var ctx = document.getElementById('timelineChart').getContext('2d');
+    function renderTimelineChart(data) {
+      document.getElementById('result').innerHTML = '<canvas id="timelineChart"></canvas>';
+      var ctx = document.getElementById('timelineChart').getContext('2d');
 
-          var labels = data.map(function (item) {
-            var d = new Date(item.date);
-            return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
-          });
-          var counts = data.map(function (item) {
-            return item.wordCount;
-          });
+      var labels = data.map(function (item) {
+        var d = new Date(item.date);
+        return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      });
+      var counts = data.map(function (item) {
+        return item.wordCount;
+      });
 
-          if (timelineChart) {
-            timelineChart.destroy();
-          }
+      if (timelineChart) {
+        timelineChart.destroy();
+      }
 
-          timelineChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels: labels,
-              datasets: [{
-                label: 'Word Count',
-                data: counts,
-                borderColor: '#1a73e8',
-                backgroundColor: 'rgba(26, 115, 232, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.1,
-                pointRadius: 2
-              }]
+      timelineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Word Count',
+            data: counts,
+            borderColor: '#1a73e8',
+            backgroundColor: 'rgba(26, 115, 232, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.1,
+            pointRadius: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Words'
+              }
             },
-            options: {
-              responsive: true,
-              plugins: {
-                legend: {
-                  display: false
-                }
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: 'Words'
-                  }
-                },
-                x: {
-                  ticks: {
-                    maxTicksLimit: 5
-                  }
-                }
+            x: {
+              ticks: {
+                maxTicksLimit: 5
               }
             }
-          });
+          }
+        }
+      });
+    }
+
+    function pollRevisionWordCount(attemptsLeft, previousCount) {
+      if (!document.getElementById('result').innerHTML.includes('canvas')) {
+        document.getElementById('result').innerText = 'Loading...';
+      }
+      google.script.run
+        .withSuccessHandler(function (data) {
+          renderTimelineChart(data);
+
+          if (data.length !== previousCount && attemptsLeft > 1) {
+            setTimeout(function () {
+              pollRevisionWordCount(attemptsLeft - 1, data.length);
+            }, 30000);
+          }
         })
         .fetchRevisionWordCount();
+    }
+
+    function fetchRevisionWordCount() {
+      pollRevisionWordCount(1, -1);
     }
 
     function fetchHeadingWordCounts() {
