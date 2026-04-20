@@ -100,11 +100,18 @@
       height: 6px;
       margin-top: 4px;
       overflow: hidden;
+      display: flex;
     }
 
     .progress-bar {
       height: 100%;
       background-color: #1a73e8;
+      border-radius: 4px;
+    }
+
+    .progress-bar-overflow {
+      height: 100%;
+      background-color: #3e35ea;
       border-radius: 4px;
     }
   </style>
@@ -174,8 +181,16 @@
         html += '</div>';
 
         if (currentGoal) {
-          var pct = Math.min(100, Math.round((node.wordCount / currentGoal) * 100));
-          html += '<div class="progress-bar-container" title="Goal: ' + Math.round(currentGoal) + '"><div class="progress-bar" style="width: ' + pct + '%"></div></div>';
+          var pct = Math.round((node.wordCount / currentGoal) * 100);
+          var scale = pct > 100 ? (100 / pct) : 1;
+          var basePct = Math.min(100, pct) * scale;
+          var overflowPct = Math.max(0, pct - 100) * scale;
+
+          var barHtml = '<div class="progress-bar" style="width: ' + basePct + '%"></div>';
+          if (overflowPct > 0) {
+            barHtml += '<div class="progress-bar-overflow" style="width: ' + overflowPct + '%"></div>';
+          }
+          html += '<div class="progress-bar-container" title="Goal: ' + Math.round(currentGoal) + '">' + barHtml + '</div>';
         }
 
         html += '</div>';
@@ -200,8 +215,16 @@
       var outlineHtml = goalHtml + '<div class="document-total">Total: ' + data.wordCount + ' words</div>';
 
       if (data.goal) {
-         var pct = Math.min(100, Math.round((data.wordCount / data.goal) * 100));
-         outlineHtml += '<div class="progress-bar-container" style="margin: 0 12px 12px 12px; width: auto;" title="Goal: ' + Math.round(data.goal) + '"><div class="progress-bar" style="width: '+pct+'%"></div></div>';
+         var pct = Math.round((data.wordCount / data.goal) * 100);
+         var scale = pct > 100 ? (100 / pct) : 1;
+         var basePct = Math.min(100, pct) * scale;
+         var overflowPct = Math.max(0, pct - 100) * scale;
+
+         var barHtml = '<div class="progress-bar" style="width: ' + basePct + '%"></div>';
+         if (overflowPct > 0) {
+           barHtml += '<div class="progress-bar-overflow" style="width: ' + overflowPct + '%"></div>';
+         }
+         outlineHtml += '<div class="progress-bar-container" style="margin: 0 12px 12px 12px; width: auto;" title="Goal: ' + Math.round(data.goal) + '">' + barHtml + '</div>';
       }
 
       if (data.headingWordCounts) {
