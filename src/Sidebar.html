@@ -111,7 +111,8 @@
   <script>
     var appData = {};
 
-    function onLoad() {
+    function refreshOutline() {
+      document.getElementById('outline-container').innerHTML = 'Loading...';
       var loaded = 0;
 
       function checkRender() {
@@ -135,6 +136,10 @@
         appData.goal = goal;
         checkRender();
       }).getWordCountGoal();
+    }
+
+    function onLoad() {
+      refreshOutline();
     }
 
     function saveGoal(value) {
@@ -187,7 +192,7 @@
     }
 
     function render(data) {
-      var goalHtml = '<div class="document-total" style="display: flex; align-items: center; justify-content: space-between;">' + 
+      var goalHtml = '<div class="document-total" style="display: flex; align-items: center; justify-content: space-between;">' +
                      '<span>Goal: <input type="number" id="goal-input" value="' + (data.goal || '') + '" onchange="saveGoal(this.value)" style="width: 80px;" title="Set total word count goal" /></span>' +
                      '</div>';
 
@@ -293,7 +298,10 @@
 
 <body onload="onLoad()">
   <div class="sidebar branding-below">
-    <h1>Document</h1>
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <h1>Document</h1>
+      <button class="action" onclick="refreshOutline()" title="Refresh word counts" style="margin-right: 12px;">Refresh</button>
+    </div>
     <div id="outline-container">Loading...</div>
 
     <h1>Timeline</h1>
