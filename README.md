@@ -35,6 +35,7 @@ The repository is structured as an [Apps Script](https://developers.google.com/a
 3. Push the local files with `clasp push`, then open the script in the online editor (`clasp open`).
 4. Use `onOpen` to add the menu and `showSidebar` to preview the sidebar UI.
 5. Real API implementations live in `Data.gs`.
+6. Use `clasp push --watch --force` when making changes to automatically push local changes (including those to the manifest).
 
 ## Limitations
 
