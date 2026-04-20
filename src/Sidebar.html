@@ -5,6 +5,8 @@
   <base target="_top">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
   <style>
     #result {
       margin-top: 15px;
@@ -251,6 +253,12 @@
 
     let timelineChart = null;
 
+    function resetZoom() {
+      if (timelineChart) {
+        timelineChart.resetZoom();
+      }
+    }
+
     function renderTimelineChart(data) {
       document.getElementById('result').innerHTML = '<canvas id="timelineChart"></canvas>';
       var ctx = document.getElementById('timelineChart').getContext('2d');
@@ -287,6 +295,18 @@
           plugins: {
             legend: {
               display: false
+            },
+            zoom: {
+              zoom: {
+                wheel: { enabled: true },
+                pinch: { enabled: true },
+                drag: { enabled: true },
+                mode: 'x'
+              },
+              pan: {
+                enabled: true,
+                mode: 'x'
+              }
             }
           },
           scales: {
@@ -403,7 +423,10 @@
     <div class="block">
       <div style="display: flex; align-items: center; justify-content: space-between;">
         <h1>Timeline</h1>
-        <button class="action" onclick="fetchRevisionWordCounts()" title="Refresh timeline" style="margin-right: 12px;">Refresh</button>
+        <div>
+          <button class="action" onclick="resetZoom()" title="Reset zoom">Reset Zoom</button>
+          <button class="action" onclick="fetchRevisionWordCounts()" title="Refresh timeline" style="margin-right: 12px; margin-left: 8px;">Refresh</button>
+        </div>
       </div>
       <div class="block" id="result"></div>
     </div>
