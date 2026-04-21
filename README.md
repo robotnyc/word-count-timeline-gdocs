@@ -46,4 +46,4 @@ The repository is structured as an [Apps Script](https://developers.google.com/a
 1. Add fail handler and error page for all methods. https://developers.google.com/apps-script/guides/html/reference/run#withFailureHandler(Function)
 2. Adjust UTC time for local timezone so changes appear on the correct date.
 3. Add word count goal and display progress towards goal. Divide goal by the number of chapters/headings to determine per-chapter progress.
-4. Add tests to ensure user has enabled the appropriate scope. If not, display a description error message on the sidebar.
+4. Add tests to ensure user has enabled the appropriate scope. If not, display a description error message on the sidebar. Using error cards https://developers.google.com/workspace/add-ons/guides/workspace-best-practices#_use_error_cards .
