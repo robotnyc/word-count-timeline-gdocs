@@ -58,6 +58,25 @@
             transition: opacity 0.2s;
         }
         .btn:hover { opacity: 0.9; }
+        .features {
+            text-align: left;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem 3rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .features h3 {
+            text-align: center;
+            color: var(--primary);
+            margin-top: 0;
+        }
+        .features ul {
+            padding-left: 1.5rem;
+        }
+        .features li {
+            margin-bottom: 1rem;
+        }
         .screenshots {
             margin-top: 3rem;
             display: flex;
@@ -115,8 +134,19 @@
     <main>
         <section class="hero">
             <h2>Visualize Your Writing Journey</h2>
-            <p>Word Count Timeline is a Google Docs add-on that helps authors, researchers, and students track their writing productivity. See your word count progress over time with elegant, interactive charts.</p>
+            <p>Support your writing process with Word Count Timeline, a free Google Docs™ add-on for tracking and visualizing your word count progress. Built to help writers, students, and professionals meet their goals, this tool provides powerful insights into your writing habits directly within your document.</p>
+            <p>This add-on runs securely on Google's own Apps Script servers, ensuring your documents remain safe and private.</p>
             <a href="#" class="btn">Install for Google Docs</a>
+        </section>
+
+        <section class="features">
+            <h3>Features</h3>
+            <ul>
+                <li><strong>Granular Word Counting:</strong> View your word count for the entire document or break it down by section and chapter. By design, only the first Document Tab is counted, allowing you to freely store notes, drafts, and edits in separate tabs without skewing your primary statistics.</li>
+                <li><strong>Goal Tracking:</strong> Set an optional word count goal to stay motivated and monitor your progress. Your target is automatically and evenly distributed across your document's chapters and sections to help you stay on track.</li>
+                <li><strong>Interactive Progress Timelines:</strong> Visualize your writing journey with dynamic, interactive charts that illustrate how your word count evolves over time.</li>
+                <li><strong>Writing Trends:</strong> Monitor your average writing speed and get an estimated completion time for your word count goal, helping you plan your writing sessions effectively.</li>
+            </ul>
         </section>
 
         <section class="screenshots">
