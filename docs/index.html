@@ -70,6 +70,30 @@
             height: auto;
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .screenshot-img:hover {
+            transform: scale(1.02);
+        }
+        /* Fullscreen Overlay */
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+        }
+        #overlay img {
+            max-width: 95%;
+            max-height: 95%;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
         footer {
             padding: 2rem;
@@ -97,8 +121,8 @@
 
         <section class="screenshots">
             <h3>See It In Action</h3>
-            <img src="word-count-timeline-annotated.png" alt="Word Count Timeline Features Annotated" class="screenshot-img">
             <img src="word-count-timeline-screenshot.png" alt="Word Count Timeline Interface" class="screenshot-img">
+            <img src="word-count-timeline-annotated.png" alt="Word Count Timeline Features Annotated" class="screenshot-img">
         </section>
     </main>
     <footer>
@@ -110,5 +134,26 @@
             <a href="tos.html">Terms of Service</a>
         </nav>
     </footer>
+
+    <div id="overlay">
+        <img src="" alt="Fullscreen view">
+    </div>
+
+    <script>
+        const overlay = document.getElementById('overlay');
+        const overlayImg = overlay.querySelector('img');
+        const screenshots = document.querySelectorAll('.screenshot-img');
+
+        screenshots.forEach(img => {
+            img.addEventListener('click', () => {
+                overlayImg.src = img.src;
+                overlay.style.display = 'flex';
+            });
+        });
+
+        overlay.addEventListener('click', () => {
+            overlay.style.display = 'none';
+        });
+    </script>
 </body>
 </html>
