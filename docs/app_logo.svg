@@ -1,0 +1,17 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with Rounded Corners -->
+  <rect x="4" y="4" width="112" height="112" rx="15" fill="white" stroke="#3F51B5" stroke-width="4"/>
+  
+  <!-- Page Icon -->
+  <path d="M30 25H75L90 40V95H30V25Z" stroke="#3F51B5" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M75 25V40H90" stroke="#3F51B5" stroke-width="3" stroke-linejoin="round"/>
+  
+  <!-- Horizontal Text Lines -->
+  <line x1="40" y1="50" x2="80" y2="50" stroke="#C8C8C8" stroke-width="2"/>
+  <line x1="40" y1="62" x2="80" y2="62" stroke="#C8C8C8" stroke-width="2"/>
+  <line x1="40" y1="74" x2="80" y2="74" stroke="#C8C8C8" stroke-width="2"/>
+  
+  <!-- Timeline Line (Rising) -->
+  <path d="M35 85L55 70L75 80L95 55L105 40" stroke="#FF4081" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="105" cy="40" r="4" fill="#FF4081"/>
+</svg>
