@@ -1,30 +1,28 @@
 # Word Count Timeline Google Docs Editor Add-on
 
-An add-on to track your writing productivity in Google Docs by visualizing your word and edit count changes over time.
+## Summary
 
-This add-on only tries to use only read-only access so your documents stay safe and secure. It is developed in Apps Script.
+Track your writing productivity in Google Docs™ with visualizations. See your word count progress over time with interactive charts to understand habits, set goals, and stay motivated.
+
+## Description
+
+Support your writing process with Word Count Timeline, a free Google Docs™ add-on for tracking and visualizing your word count progress. Built to help writers, students, and professionals meet their goals, this tool provides powerful insights into your writing habits directly within your document.
+
+This add-on runs securely on Google's own Apps Script servers, ensuring your documents remain safe and private.
 
 ## Features
 
-1. Track word count by document and by chapter against an optional goal count (stored in an Apps Script property).
-2. Session word count changes over time (group revisions by 60 minute sessions). This uses the Google Drive revisions API.
-3. Track edits vs new words added by diff'ing document revisions.
-4. Only the first Document Tab is counted. Move notes, edits, drafts, etc... into another tab so they are not counted.
-
-### Visualizations
-
-1. The word count goal tracker either weekly or daily.
-2. The Heatmap: A visual grid (X: Hour of Day, Y: Day of Week) showing when the most words are typically added.
-3. The 'Golden Hour': A card displaying the user's statistically most productive 60-minute window.
-4. Velocity Meter: Show 'Words per Minute' for the current session vs. all-time average.
-5. Chapter Breakdown: Parse 'Heading 1' styles from the doc to show word counts and progress bars per chapter.
+1. **Granular Word Counting:** View your word count for the entire document or break it down by section and chapter. By design, only the first Document Tab is counted, allowing you to freely store notes, drafts, and edits in separate tabs without skewing your primary statistics.
+2. **Goal Tracking:** Set an optional word count goal to stay motivated and monitor your progress. Your target is automatically and evenly distributed across your document's chapters and sections to help you stay on track.
+3. **Interactive Progress Timelines:** Visualize your writing journey with dynamic, interactive charts that illustrate how your word count evolves over time.
+4. **Writing Trends:** Monitor your average writing speed and get an estimated completion time for your word count goal, helping you plan your writing sessions effectively.
 
 ## Usage
 
-1. From the Google Docs "Extensions" menu, search for "Word Count Timeline".
-2. Authenticate with Google OAuth 2.0 and allow scopes documents.readonly and drive.metadata.readonly.
-3. Activate the add-on from the side bar to see your writing stats.
-4. Add-on runs automatically at least once an hour in order to refresh statistics.
+1. Install the "Word Count Timeline" add-on from the Google Workspace Marketplace.
+2. Open a Google Doc and activate the add-on from the "Extensions" menu.
+3. The sidebar will instantly display your writing statistics.
+4. Take control of your writing and hit your targets with Word Count Timeline.
 
 ## Development
 
