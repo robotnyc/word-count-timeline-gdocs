@@ -136,7 +136,7 @@ function fetchRevisions(fileId) {
       pageToken = response.nextPageToken;
     } catch (err) {
       console.error("fetchRevisions: %s", err.message);
-      throw new Error("Could not get revisions history to build timeline. Check permissions and try again.");
+      throw err;
     }
   } while (pageToken);
 
