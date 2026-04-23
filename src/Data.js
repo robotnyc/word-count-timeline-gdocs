@@ -136,7 +136,7 @@ function fetchRevisions(fileId) {
       pageToken = response.nextPageToken;
     } catch (err) {
       console.log("fetchRevisions: Failed with error %s", err.message);
-      break;
+      throw err;
     }
   } while (pageToken);
 
