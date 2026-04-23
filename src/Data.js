@@ -118,7 +118,7 @@ function fetchRevisions(fileId) {
         pageToken: pageToken,
       });
       if (!response.revisions || response.revisions.length === 0) {
-        console.log("fetchRevisions: no revisions returned on this page.");
+        console.warn("fetchRevisions: no revisions returned on this page.");
         break;
       }
       for (let i = 0; i < response.revisions.length; i++) {
@@ -135,7 +135,7 @@ function fetchRevisions(fileId) {
       allRevisions = allRevisions.concat(response.revisions);
       pageToken = response.nextPageToken;
     } catch (err) {
-      console.log("fetchRevisions: Failed with error %s", err.message);
+      console.error("fetchRevisions: Failed with error %s", err.message);
       throw err;
     }
   } while (pageToken);
@@ -154,7 +154,7 @@ function fetchRevisionWordCounts(onlyCached = false) {
     try {
       allRevisionsCache = JSON.parse(cachedDataStr);
     } catch (e) {
-      console.log("Failed to parse ALL_REVISIONS_CACHE: " + e.message);
+      console.error("Failed to parse ALL_REVISIONS_CACHE: " + e.message);
     }
   }
 
@@ -203,12 +203,12 @@ function fetchRevisionWordCounts(onlyCached = false) {
       try {
         wc = fetchWordCountForRevision(docId, rev.id);
       } catch (e) {
-        console.log('Failed to get word count for revision %s: %s', rev.id, e.message);
+        console.error('Failed to get word count for revision %s: %s', rev.id, e.message);
         continue;
       }
 
       if (wc === null) {
-        console.log('No text available for revision %s', rev.id);
+        console.warn('No text available for revision %s', rev.id);
         continue;
       }
       console.log("Revision %s has word count %d", rev.id, wc);
@@ -226,7 +226,7 @@ function fetchRevisionWordCounts(onlyCached = false) {
     try {
       documentProperties.setProperty(CACHE_KEY, JSON.stringify(allRevisionsCache));
     } catch (e) {
-      console.log("Failed to save ALL_REVISIONS_CACHE: " + e.message);
+      console.error("Failed to save ALL_REVISIONS_CACHE: " + e.message);
     }
   }
 
@@ -269,7 +269,7 @@ function fetchRevisionText(fileId, revisionId) {
   // exported.  Return null instead of throwing so callers can decide what
   // to do (e.g. skip the revision).
   if (!rev.exportLinks || !rev.exportLinks['text/plain']) {
-    console.log(
+    console.warn(
       'fetchRevisionText: no text/plain link for revision %s, maybe binary placeholder',
       revisionId
     );
@@ -292,7 +292,7 @@ function fetchRevisionText(fileId, revisionId) {
     const match = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
     if (match && match[1]) {
       const plainText = match[1].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-      console.log("fetchRevisionText: Failed to fetch URL %s revision %s content: %s", url, revisionId, plainText);
+      console.error("fetchRevisionText: Failed to fetch URL %s revision %s content: %s", url, revisionId, plainText);
     }
     throw new Error('HTTP response code: ' + resp.getResponseCode());
   }
