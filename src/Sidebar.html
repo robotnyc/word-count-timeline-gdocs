@@ -116,9 +116,39 @@
       background-color: #34a853;
       border-radius: 4px;
     }
+
+    #error-container {
+      display: none;
+      background-color: #fce8e6;
+      color: #d93025;
+      padding: 8px 12px;
+      margin: 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: "Google Sans", Roboto, Helvetica, Arial, sans-serif;
+      word-wrap: break-word;
+      border: 1px solid #fad2e1;
+    }
   </style>
   <script>
     var appData = {};
+
+    function showError(error) {
+      console.error(error);
+      var errorContainer = document.getElementById('error-container');
+      if (errorContainer) {
+        errorContainer.innerText = 'Error: ' + (error.message || error);
+        errorContainer.style.display = 'block';
+      }
+    }
+
+    function clearError() {
+      var errorContainer = document.getElementById('error-container');
+      if (errorContainer) {
+        errorContainer.innerText = '';
+        errorContainer.style.display = 'none';
+      }
+    }
 
     function refreshOutline() {
       document.getElementById('outline-container').innerHTML = 'Loading...';
@@ -131,20 +161,30 @@
         }
       }
 
-      google.script.run.withSuccessHandler(function (count) {
-        appData.wordCount = count;
-        checkRender();
-      }).getCurrentWordCount();
+      clearError();
+      google.script.run
+        .withSuccessHandler(function (count) {
+          appData.wordCount = count;
+          checkRender();
+        })
+        .withFailureHandler(showError)
+        .getCurrentWordCount();
 
-      google.script.run.withSuccessHandler(function (headings) {
-        appData.headingWordCounts = headings;
-        checkRender();
-      }).getHeadingWordCounts();
+      google.script.run
+        .withSuccessHandler(function (headings) {
+          appData.headingWordCounts = headings;
+          checkRender();
+        })
+        .withFailureHandler(showError)
+        .getHeadingWordCounts();
 
-      google.script.run.withSuccessHandler(function (goal) {
-        appData.goal = goal;
-        checkRender();
-      }).getWordCountGoal();
+      google.script.run
+        .withSuccessHandler(function (goal) {
+          appData.goal = goal;
+          checkRender();
+        })
+        .withFailureHandler(showError)
+        .getWordCountGoal();
     }
 
     function onLoad() {
@@ -153,9 +193,12 @@
     }
 
     function saveGoal(value) {
+      clearError();
       var goal = value ? parseInt(value, 10) : null;
       appData.goal = goal;
-      google.script.run.setWordCountGoal(goal);
+      google.script.run
+        .withFailureHandler(showError)
+        .setWordCountGoal(goal);
       render(appData);
     }
 
@@ -247,11 +290,13 @@
     }
 
     function fetchWordCount() {
+      clearError();
       document.getElementById('result').innerText = 'Loading...';
       google.script.run
         .withSuccessHandler(function (count) {
           document.getElementById('result').innerText = 'Word count: ' + count;
         })
+        .withFailureHandler(showError)
         .getCurrentWordCount();
     }
 
@@ -332,6 +377,7 @@
     }
 
     function pollRevisionWordCounts(attemptsLeft, previousCount) {
+      clearError();
       if (!document.getElementById('result').innerHTML.includes('canvas')) {
         document.getElementById('result').innerText = 'Loading...';
       }
@@ -346,6 +392,10 @@
             }, 30000);
           }
         })
+        .withFailureHandler(function(error) {
+          document.getElementById('result').innerText = '';
+          showError(error);
+        })
         .fetchRevisionWordCounts();
     }
 
@@ -354,6 +404,7 @@
     }
 
     function refreshTrends() {
+      clearError();
       var trendsDiv = document.getElementById('result-trends');
       trendsDiv.innerText = 'Loading...';
       google.script.run
@@ -401,15 +452,21 @@
 
           trendsDiv.innerHTML = html;
         })
+        .withFailureHandler(function(error) {
+          trendsDiv.innerText = '';
+          showError(error);
+        })
         .fetchRevisionWordCounts(true);
     }
 
     function fetchHeadingWordCounts() {
+      clearError();
       document.getElementById('result').innerText = 'Loading...';
       google.script.run
         .withSuccessHandler(function (data) {
           document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
         })
+        .withFailureHandler(showError)
         .getHeadingWordCounts();
     }
 
@@ -418,6 +475,7 @@
 
 <body onload="onLoad()">
   <div class="sidebar branding-below">
+    <div id="error-container"></div>
     <div style="display: flex; align-items: center; justify-content: space-between;">
       <h1>Document</h1>
       <button class="action" onclick="refreshOutline()" title="Refresh word counts" style="margin-right: 12px;">Refresh</button>
