@@ -204,7 +204,7 @@ function fetchRevisionWordCounts(onlyCached = false) {
         wc = fetchWordCountForRevision(docId, rev.id);
       } catch (e) {
         console.error('Failed to get word count for revision %s: %s', rev.id, e.message);
-        continue;
+        throw e;
       }
 
       if (wc === null) {
