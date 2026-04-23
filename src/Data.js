@@ -135,8 +135,8 @@ function fetchRevisions(fileId) {
       allRevisions = allRevisions.concat(response.revisions);
       pageToken = response.nextPageToken;
     } catch (err) {
-      console.error("fetchRevisions: Failed with error %s", err.message);
-      throw err;
+      console.error("fetchRevisions: %s", err.message);
+      throw new Error("Could not get revisions history to build timeline. Check permissions and try again.");
     }
   } while (pageToken);
 
