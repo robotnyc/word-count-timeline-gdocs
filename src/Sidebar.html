@@ -137,7 +137,7 @@
       console.error(error);
       var errorContainer = document.getElementById('error-container');
       if (errorContainer) {
-        errorContainer.innerText = 'Error: ' + (error.message || error);
+        errorContainer.innerText = '' + (error.message || error);
         errorContainer.style.display = 'block';
       }
     }
