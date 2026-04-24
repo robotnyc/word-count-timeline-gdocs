@@ -1,88 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Support | Word Count Timeline</title>
-    <style>
-        :root {
-            --primary: #3F51B5;
-            --accent: #FF4081;
-            --text: #333;
-            --bg: #f4f7f6;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: var(--text);
-            background-color: var(--bg);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        header {
-            background: white;
-            padding: 2rem 1rem;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .logo {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 1rem;
-        }
-        main {
-            flex: 1;
-            max-width: 800px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        h1, h2 { color: var(--primary); text-align: center; }
-        .content-box {
-            background: white;
-            padding: 3rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
-        }
-        .issue {
-            margin-bottom: 1.5rem;
-            padding: 1.5rem;
-            border-left: 4px solid var(--accent);
-            background-color: #fafafa;
-        }
-        .issue h3 {
-            margin-top: 0;
-            color: var(--primary);
-        }
-        .btn {
-            display: inline-block;
-            background: var(--primary);
-            color: white;
-            padding: 0.8rem 2rem;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 1rem;
-            font-weight: bold;
-            transition: opacity 0.2s;
-            text-align: center;
-        }
-        .btn:hover { opacity: 0.9; }
-        .center-btn { text-align: center; }
-        footer {
-            padding: 2rem;
-            text-align: center;
-            font-size: 0.9rem;
-            background: var(--bg);
-        }
-        footer a {
-            color: var(--primary);
-            margin: 0 10px;
-            text-decoration: none;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <header>
         <img src="app_logo.png" alt="Word Count Timeline Logo" class="logo">
@@ -93,16 +18,21 @@
             <h2>Common Issues</h2>
             <div class="issue">
                 <h3>1. Not all revisions have word counts</h3>
-                <p>This is a limitation of the Google Drive™ API. Depending on the hot-cache on Google's backend, only some unnamed revisions are returned. The add-on will attempt 3 times to load more revisions to get a more complete picture.</p>
-                <p><strong>Solution:</strong> You can also trigger this manually by clicking the <strong>Timeline Refresh</strong> button within the add-on sidebar.</p>
+                <p>This is a limitation of the Google Drive™ API. Depending on the hot-cache on Google's backend, only
+                    some unnamed revisions are returned. The add-on will attempt 3 times to load more revisions to get a
+                    more complete picture.</p>
+                <p><strong>Solution:</strong> You can also trigger this manually by clicking the <strong>Timeline
+                        Refresh</strong> button within the add-on sidebar.</p>
             </div>
         </section>
 
         <section class="content-box center-btn">
             <h2>Still need help?</h2>
-            <p>If you have any other questions or are experiencing bugs, please fill out a support ticket using GitHub Issues.</p>
-            <a href="https://github.com/robotnyc/word-count-timeline-gdocs/issues" target="_blank" rel="noopener noreferrer">
-            Report an Issue
+            <p>If you have any other questions or are experiencing bugs, please fill out a support ticket using GitHub
+                Issues.</p>
+            <a href="https://github.com/robotnyc/word-count-timeline-gdocs/issues" target="_blank"
+                rel="noopener noreferrer">
+                Report an Issue
             </a>
         </section>
     </main>
@@ -116,4 +46,5 @@
         </nav>
     </footer>
 </body>
+
 </html>
